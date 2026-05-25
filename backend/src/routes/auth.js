@@ -1,7 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
-const signUpValidation = require("../../utils/validation");
+const {signUpValidation} = require("../../utils/validation");
 
 const authRouter=express.Router();
 
@@ -39,13 +39,17 @@ authRouter.post("/login", async (req, res) => {
       //ater login a token will be generated and send back to user
       const token = await user.getJWT();
 
-      res.cookie("token", token);
-      res.status(200).send("Login Successful");
+      res.cookie("token", token,{
+        httpOnly:true,
+        secure:false, // production ma true
+        sameSite:"strict"
+      });
+      res.status(200).send(user);
     } else {
       throw new Error("Invalid credentials");
     }
   } catch (err) {
-    res.status(401).send("Error is : " + err.message);
+    res.status(401).send(err.message);
   }
 });
 
