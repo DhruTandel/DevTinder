@@ -12,7 +12,7 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
     const user = req.user;
     res.send(user);
   } catch (err) {
-    res.status(401).send("Error is :" + err.message);
+    res.status(401).send("Please Login");
   }
 });
 
