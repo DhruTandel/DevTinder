@@ -9,6 +9,7 @@ const Login = () => {
   const [emailID, setEmailID] = useState("krutitandel508@gmail.com");
   const [password, setPassword] = useState("Kruti@2026");
   const [showPassword, setShowPassword] = useState(false);
+  const [error,setError]=useState("")
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -27,7 +28,8 @@ const Login = () => {
       dispatch(addUser(res.data));
       navigate("/");
     } catch (err) {
-      console.log("Error is :", err?.response?.data || err.message);
+      setError(err?.response?.data || "Something went wrong")
+      // console.log("Error is :", err?.response?.data || err.message);
     }
   };
 
@@ -115,6 +117,8 @@ const Login = () => {
             Forgot Password?
           </a>
         </div>
+
+        <p className="text-red-500 my-2 p-2">{error}</p>
 
         {/* Login Button */}
         <button

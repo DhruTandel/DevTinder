@@ -9,7 +9,7 @@ const authRouter=express.Router();
 authRouter.post("/signup", async (req, res) => {
   try {
     signUpValidation(req);
-    const { firstName, lastName, emailID, password } = req.body;
+    const { firstName, lastName, emailID, password,age,photoUrl,gender,skills,profession } = req.body;
     // encrypt password
     const passwordHash = await bcrypt.hash(password, 10);
     const user = new User({
@@ -17,6 +17,11 @@ authRouter.post("/signup", async (req, res) => {
       lastName,
       emailID,
       password: passwordHash,
+      age,
+      photoUrl,
+      gender,
+      skills,
+      profession
     });
     await user.save();
     res.send("User added succesfully");

@@ -4,7 +4,7 @@ const connectionRequest = require("../models/connectionRequest");
 const User = require("../models/User");
 
 const userRouter = express.Router();
-const userData = "firstName lastName age gender skills photoUrl";
+const userData = "firstName lastName age gender skills photoUrl profession";
 
 userRouter.get("/user/requests/recieved", userAuth, async (req, res) => {
   try {
@@ -53,7 +53,7 @@ userRouter.get("/users/connections", userAuth, async (req, res) => {
   }
 });
 
-userRouter.get("/users/feed", userAuth, async (req, res) => {
+userRouter.get("/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
     const page=parseInt(req.query.page) || 1

@@ -37,10 +37,13 @@ const userSchema = mongoose.Schema(
     gender: {
       type: String,
       validate(value) {
-        if (!["male", "female", "others"].includes(value)) {
+        if (!["Male", "Female", "Others"].includes(value)) {
           throw new Error("Gender data is not correct");
         }
       },
+    },
+    profession:{
+      type:String,
     },
     photoUrl: {
       type: String,
