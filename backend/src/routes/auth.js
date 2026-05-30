@@ -1,15 +1,24 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
-const {signUpValidation} = require("../../utils/validation");
+const { signUpValidation } = require("../../utils/validation");
 
-const authRouter=express.Router();
-
+const authRouter = express.Router();
 
 authRouter.post("/signup", async (req, res) => {
   try {
     signUpValidation(req);
-    const { firstName, lastName, emailID, password,age,photoUrl,gender,skills,profession } = req.body;
+    const {
+      firstName,
+      lastName,
+      emailID,
+      password,
+      age,
+      photoUrl,
+      gender,
+      skills,
+      profession,
+    } = req.body;
     // encrypt password
     const passwordHash = await bcrypt.hash(password, 10);
     const user = new User({
@@ -21,10 +30,17 @@ authRouter.post("/signup", async (req, res) => {
       photoUrl,
       gender,
       skills,
-      profession
+      profession,
     });
-    await user.save();
-    res.send("User added succesfully");
+    const savedUser = await user.save();
+    const token = await savedUser.getJWT();
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // production ma true
+      sameSite: "strict",
+    });
+    res.json({ message: "User added succesfully", data: savedUser });
   } catch (err) {
     res.status(400).send("Error is :" + err.message);
   }
@@ -38,16 +54,16 @@ authRouter.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid Credentials");
     }
-    const isPasswordValid = await user.validatePassword(password)
+    const isPasswordValid = await user.validatePassword(password);
 
     if (isPasswordValid) {
       //ater login a token will be generated and send back to user
       const token = await user.getJWT();
 
-      res.cookie("token", token,{
-        httpOnly:true,
-        secure:false, // production ma true
-        sameSite:"strict"
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false, // production ma true
+        sameSite: "strict",
       });
       res.status(200).send(user);
     } else {
@@ -58,9 +74,9 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
-authRouter.post("/logout",async(req,res)=>{
-    res.clearCookie("token");
-    res.send("You are logged out")
-})
+authRouter.post("/logout", async (req, res) => {
+  res.clearCookie("token");
+  res.send("You are logged out");
+});
 
-module.exports=authRouter
+module.exports = authRouter;

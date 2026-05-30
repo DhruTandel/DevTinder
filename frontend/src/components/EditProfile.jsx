@@ -38,14 +38,12 @@ const EditProfile = ({ user }) => {
         },
         { withCredentials: true },
       );
-      // console.log(res)
-      console.log(res.data.profession)
       dispatch(addUser(res?.data?.data));
       setShowToast(true);
       setTimeout(()=>{
         setShowToast(false)
         navigate("/")
-      },3000)
+      },1000)
     } catch (err) {
       setError(err.response.data);
     }

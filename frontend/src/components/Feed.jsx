@@ -9,13 +9,12 @@ const Feed = () => {
   const feedData = useSelector((store) => store.feed);
   const dispatch = useDispatch();
 
-  const getFeed = async () => {
-    if (feedData) return;
+  const getFeed = async () => { 
     try {
       const res = await axios.get(BASE_URL + "/feed", {
         withCredentials: true,
       });
-      console.log(res)
+      // console.log(res.data)
       dispatch(addFeed(res.data));
     } catch (err) {
       console.log(err);
@@ -26,13 +25,15 @@ const Feed = () => {
     getFeed();
   }, []);
 
-
-  if(!feedData){
-    return <h1>Loading....</h1>
+  if (!feedData) return null;
+  if (feedData.length === 0) {
+    return <h1>No new Users found</h1>;
   }
   return (
     <>
-      <UserCard user={feedData[0]} />
+      {feedData?.map((user) => {
+        return <UserCard key={user._id} user={user} />;
+      })}
     </>
   );
 };

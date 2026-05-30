@@ -3,13 +3,16 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
-import  {BASE_URL}  from "../utils/constants";
+import { BASE_URL } from "../utils/constants";
 
 const Login = () => {
-  const [emailID, setEmailID] = useState("krutitandel508@gmail.com");
-  const [password, setPassword] = useState("Kruti@2026");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [emailID, setEmailID] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error,setError]=useState("")
+  const [error, setError] = useState("");
+  const [isLoginForm, setIsLoginForm] = useState(true);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -26,10 +29,22 @@ const Login = () => {
         },
       );
       dispatch(addUser(res.data));
-      navigate("/");
+      return navigate("/");
     } catch (err) {
-      setError(err?.response?.data || "Something went wrong")
-      // console.log("Error is :", err?.response?.data || err.message);
+      setError(err?.response?.data || "Something went wrong");
+    }
+  };
+  const handleSignUp = async () => {
+    try {
+      const res = await axios.post(
+        BASE_URL + "/signup",
+        { firstName, lastName, emailID, password },
+        { withCredentials: true },
+      );
+      dispatch(addUser(res.data.data))
+       return navigate("/profile");
+    } catch (err) {
+      setError(err?.response?.message || "something went wrong");
     }
   };
 
@@ -38,8 +53,73 @@ const Login = () => {
       <div className="bg-base-300/80 backdrop-blur-xl border border-base-content/10 shadow-2xl rounded-3xl p-8 sm:p-10">
         {/* Heading */}
         <h1 className="text-4xl sm:text-5xl font-bold text-center mb-10">
-          Login
+          {isLoginForm ? "Login" : "Sign UP"}
         </h1>
+        {!isLoginForm && (
+          <>
+            {" "}
+            <div className="mb-6">
+              <label className="block mb-2 text-sm font-medium">
+                First Name
+              </label>
+
+              <label className="input input-bordered flex items-center gap-3 h-14 rounded-2xl w-full">
+                {/* Email Icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="h-5 w-5 opacity-70 stroke-current flex-shrink-0"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M21 8V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1m18 0-7.89 5.26a2 2 0 0 1-2.22 0L3 8m18 0v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"
+                  />
+                </svg>
+
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Enter your First Name"
+                  className="grow bg-transparent outline-none"
+                />
+              </label>
+            </div>
+            <div className="mb-6">
+              <label className="block mb-2 text-sm font-medium">
+                Last Name
+              </label>
+
+              <label className="input input-bordered flex items-center gap-3 h-14 rounded-2xl w-full">
+                {/* Email Icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="h-5 w-5 opacity-70 stroke-current flex-shrink-0"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M21 8V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1m18 0-7.89 5.26a2 2 0 0 1-2.22 0L3 8m18 0v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"
+                  />
+                </svg>
+
+                <input
+                  type="email"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Enter your Last Name"
+                  className="grow bg-transparent outline-none"
+                />
+              </label>
+            </div>
+          </>
+        )}
 
         {/* Email */}
         <div className="mb-6">
@@ -123,17 +203,35 @@ const Login = () => {
         {/* Login Button */}
         <button
           className="btn btn-primary w-full h-14 rounded-2xl text-lg font-semibold"
-          onClick={handleLogin}
+          onClick={isLoginForm ? handleLogin : handleSignUp}
         >
-          Login
+          {isLoginForm ? "Login" : "SignUp"}
         </button>
 
         {/* Signup */}
         <p className="text-center text-sm mt-8 text-base-content/70">
-          Don&apos;t have an account?{" "}
-          <span className="text-primary font-medium cursor-pointer hover:underline">
-            Signup
-          </span>
+          {isLoginForm ? (
+            <>
+              {" "}
+              Don&apos;t have an account?{" "}
+              <span
+                className="text-primary font-medium cursor-pointer hover:underline"
+                onClick={() => setIsLoginForm(false)}
+              >
+                Signup
+              </span>
+            </>
+          ) : (
+            <>
+              Already an user?{" "}
+              <span
+                className="text-primary font-medium cursor-pointer hover:underline"
+                onClick={() => setIsLoginForm(true)}
+              >
+                Login
+              </span>
+            </>
+          )}
         </p>
       </div>
     </div>
