@@ -4,6 +4,7 @@ import { BASE_URL } from "../utils/constants";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { removeFeed } from "../utils/feedSlice";
+import toast from "react-hot-toast";
 
 const UserCard = ({ user }) => {
   const dispatch = useDispatch();
@@ -28,22 +29,40 @@ const UserCard = ({ user }) => {
         {},
         { withCredentials: true },
       );
-      console.log(res);
+      if (status === "interested") {
+        toast.success(`Connection request sent to ${firstName}`);
+      } else {
+        toast.success(`${firstName} ignored`);
+      }
       dispatch(removeFeed(_id));
     } catch (err) {
-      console.log(err);
+      toast.error(err?.response?.data?.message || "Failed to send Request");
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen p-4">
-      <div className="w-92.5 rounded-3xl overflow-hidden bg-[#111827] border border-gray-800 shadow-2xl hover:scale-105 transition-all duration-300">
+    <div className="w-full max-w-sm p-4">
+     <div
+  className="
+    w-[320px]
+    rounded-3xl
+    overflow-hidden
+    bg-[#111827]
+    border
+    border-gray-800
+    shadow-2xl
+    hover:scale-105
+    transition-all
+    duration-300
+  "
+>
+        {" "}
         {/* IMAGE */}
         <div className="relative">
           <img
             src={photoUrl}
             alt="user"
-            className="w-full h-[400px] object-cover"
+            className="w-full h-[400px] object-cover object-center"
           />
 
           {/* Gradient Overlay */}
@@ -64,13 +83,12 @@ const UserCard = ({ user }) => {
             <p className="text-pink-400 text-sm mt-1 capitalize">{gender}</p>
           </div>
         </div>
-
         {/* CONTENT */}
         <div className="p-5">
           {/* Profession */}
           <div className="flex items-center gap-2 text-gray-300 mb-3">
             <Briefcase size={18} />
-            <p className="text-sm">{profession}</p>
+            <p className="text-sm">{profession|| "Not Specified"}</p>
           </div>
 
           {/* Skills */}

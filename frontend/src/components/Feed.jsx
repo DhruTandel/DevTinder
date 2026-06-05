@@ -4,20 +4,20 @@ import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addFeed } from "../utils/feedSlice";
 import UserCard from "./UserCard";
+import toast from "react-hot-toast";
 
 const Feed = () => {
   const feedData = useSelector((store) => store.feed);
   const dispatch = useDispatch();
 
-  const getFeed = async () => { 
+  const getFeed = async () => {
     try {
       const res = await axios.get(BASE_URL + "/feed", {
         withCredentials: true,
       });
-      // console.log(res.data)
-      dispatch(addFeed(res.data));
+      dispatch(addFeed(res.data.data));
     } catch (err) {
-      console.log(err);
+      toast.error(err?.response?.data?.message || "Failed to load feed");
     }
   };
 
@@ -31,9 +31,12 @@ const Feed = () => {
   }
   return (
     <>
-      {feedData?.map((user) => {
+      {/* {feedData?.map((user) => {
         return <UserCard key={user._id} user={user} />;
-      })}
+      })} */}
+      <div className="w-full flex justify-center items-center py-10">
+        <UserCard user={feedData[0]} />
+      </div>
     </>
   );
 };

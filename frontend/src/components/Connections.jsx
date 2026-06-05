@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addConnection } from "../utils/connectionSlice";
+import toast from "react-hot-toast";
 
 const Connections = () => {
   const dispatch = useDispatch();
@@ -17,7 +18,7 @@ const Connections = () => {
 
       dispatch(addConnection(res.data.data));
     } catch (err) {
-      console.log(err);
+      toast.error(err?.response?.data?.message || "Failed to load connections")
     }
   };
 

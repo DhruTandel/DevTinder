@@ -3,13 +3,14 @@ const userAuth = require("../middlewares/auth");
 const ConnectRequestModel = require("../models/connectionRequest");
 const mongoose = require("mongoose");
 const User = require("../models/User");
+const ApiError = require("../../utils/ApiError");
 
 const requestRouter = express.Router();
 
 requestRouter.post(
   "/request/send/:status/:toUserId",
   userAuth,
-  async (req, res) => {
+  async (req, res, next) => {
     try {
       const fromUserId = req.user._id;
       const toUserId = req.params.toUserId;
@@ -17,22 +18,22 @@ requestRouter.post(
       const allowedStatus = ["ignored", "interested"];
 
       if (!allowedStatus.includes(status)) {
-        throw new Error("Invalid status type");
+        throw new ApiError(400, "Invalid status type");
       }
       // check if id is valid or not
       if (!mongoose.Types.ObjectId.isValid(toUserId)) {
-        throw new Error("Invalid User ID");
+        throw new ApiError(400, "Invalid User ID");
       }
 
       // check user exists
       const toUser = await User.findById(toUserId);
       if (!toUser) {
-        throw new Error("User not found");
+        throw new ApiError(404, "User not found");
       }
 
       // check self request
       if (fromUserId.toString() === toUserId) {
-        throw new Error("Cannot send request to yourself");
+        throw new ApiError(400, "Cannot send request to yourself");
       }
 
       // duplicate request
@@ -43,7 +44,7 @@ requestRouter.post(
         ],
       });
       if (existingConnectionRequest) {
-        throw new Error("Connection request ALready Exists");
+        throw new ApiError(409, "Connection request ALready Exists");
       }
 
       // create request
@@ -60,9 +61,9 @@ requestRouter.post(
       } else if (status === "ignored") {
         message = "User ignored";
       }
-      res.json({ message, data });
+      res.status(201).json({ success: true, message, data });
     } catch (err) {
-      res.status(400).send("Error is : " + err.message);
+      next(err);
     }
   },
 );
@@ -70,21 +71,17 @@ requestRouter.post(
 requestRouter.post(
   "/request/review/:status/:requestId",
   userAuth,
-  async (req, res) => {
+  async (req, res, next) => {
     try {
       const loggedInUser = req.user;
       const { status, requestId } = req.params;
-      console.log(status);
-      console.log(requestId);
 
       const allowedStatus = ["accepted", "rejected"];
       if (!allowedStatus.includes(status)) {
-        return res.status(400).json({ message: "Invalid status type" });
+        throw new ApiError(400, "Invalid status type");
       }
       if (!mongoose.Types.ObjectId.isValid(requestId)) {
-        return res.status(400).json({
-          message: "Invalid request ID",
-        });
+        throw new ApiError(400, "Invalid request ID");
       }
 
       const connectionRequest = await ConnectRequestModel.findOne({
@@ -94,14 +91,12 @@ requestRouter.post(
       });
 
       if (!connectionRequest) {
-        return res
-          .status(400)
-          .json({ message: "Connection request not found" });
+        throw new ApiError(404, "Connection request not found");
       }
 
       connectionRequest.status = status;
       const data = await connectionRequest.save();
-      res.status(200).json({ message: "Connection requested " + status, data });
+      res.status(200).json({success:true, message: "Connection requested " + status, data });
     } catch (err) {
       res.status(400).send("Error is :" + err.message);
     }

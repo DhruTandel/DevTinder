@@ -6,7 +6,7 @@ const User = require("../models/User");
 const userRouter = express.Router();
 const userData = "firstName lastName age gender skills photoUrl profession";
 
-userRouter.get("/user/requests/recieved", userAuth, async (req, res) => {
+userRouter.get("/user/requests/recieved", userAuth, async (req, res, next) => {
   try {
     const loggedInUser = req.user;
     const connectionRequests = await connectionRequest
@@ -16,14 +16,17 @@ userRouter.get("/user/requests/recieved", userAuth, async (req, res) => {
       })
       .populate("fromUserId", userData);
     if (connectionRequests.length === 0) {
-      return res.status(200).json({ message: "No active Requests", data: [] });
+      return res
+        .status(200)
+        .json({ success: true, message: "No active Requests", data: [] });
     }
     res.json({
+      success: true,
       message: "Request fetched successfully",
       data: connectionRequests,
     });
   } catch (err) {
-    res.status(400).send("Error is : " + err.message);
+    next(err);
   }
 });
 
@@ -47,19 +50,23 @@ userRouter.get("/users/connections", userAuth, async (req, res) => {
       }
       return row.fromUserId;
     });
-    res.json({ data });
+    res.status(200).json({
+      success: true,
+      message: "Connections fetched successfully",
+      data,
+    });
   } catch (err) {
-    res.status(400).send("Error is : " + err.message);
+    next(err);
   }
 });
 
-userRouter.get("/feed", userAuth, async (req, res) => {
+userRouter.get("/feed", userAuth, async (req, res,next) => {
   try {
     const loggedInUser = req.user;
-    const page=parseInt(req.query.page) || 1
-    let limit=parseInt(req.query.limit) || 10;
-    limit=limit>50?50:limit;
-    const skip=(page-1)*limit;
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    limit = limit > 50 ? 50 : limit;
+    const skip = (page - 1) * limit;
 
     const connectionRequests = await connectionRequest
       .find({
@@ -74,15 +81,22 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     });
 
     const users = await User.find({
-      $and:[
-        {_id:{$nin:Array.from(hideUsersFromFeed)}},
-        {_id:{$ne:loggedInUser._id}},
-      ]
-    }).select(userData).skip(skip).limit(limit);
+      $and: [
+        { _id: { $nin: Array.from(hideUsersFromFeed) } },
+        { _id: { $ne: loggedInUser._id } },
+      ],
+    })
+      .select(userData)
+      .skip(skip)
+      .limit(limit);
 
-    res.status(200).send(users)
+    res.status(200).json({
+      success: true,
+      message: "Feed fetched successfully",
+      data: users,
+    });
   } catch (err) {
-    res.status(400).send("Error is : " + err.message);
+    next(err)
   }
 });
 module.exports = userRouter;

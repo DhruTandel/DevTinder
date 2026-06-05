@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState,useRef } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [firstName, setFirstName] = useState("");
@@ -11,12 +12,24 @@ const Login = () => {
   const [emailID, setEmailID] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState({});
   const [isLoginForm, setIsLoginForm] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const loginProgress=useRef(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+
+    if(loginProgress.current) return;
+    loginProgress.current=true;
+    setLoading(true);
+    const isValid = validateLogin();
+    if (!isValid) {
+      loginProgress.current = false;
+      setLoading(false);
+      return;
+    }
     try {
       const res = await axios.post(
         BASE_URL + "/login",
@@ -28,23 +41,79 @@ const Login = () => {
           withCredentials: true,
         },
       );
-      dispatch(addUser(res.data));
-      return navigate("/");
+      dispatch(addUser(res.data.data));
+      toast.success(res.data.message);
+      navigate("/");
     } catch (err) {
-      setError(err?.response?.data || "Something went wrong");
+      toast.error(err?.response?.data?.message || "Something went wrong", {
+        id: "login-error",
+      });
+    } finally {
+      loginProgress.current=false;
+      setLoading(false);
     }
   };
+
+  const validateSignUp = () => {
+    const newErrors = {};
+    if (!firstName.trim()) {
+      newErrors.firstName = "First Name Required";
+    }
+    if (!lastName.trim()) {
+      newErrors.lastName = "Last Name Required";
+    }
+    if (!emailID.trim()) {
+      newErrors.emailID = "Email is Required";
+    }
+    if (emailID && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailID)) {
+      newErrors.emailID = "Enter valid email";
+    }
+    if (!password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    } else if (!/^(?=.*[a-z])(?=.*[A-Z]).+$/.test(password)) {
+      newErrors.password =
+        "Password must contain at least 1 uppercase and 1 lowercase letter";
+    }
+
+    setError(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateLogin = () => {
+    const newErrors = {};
+
+    if (!emailID.trim()) {
+      newErrors.emailID = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailID)) {
+      newErrors.emailID = "Enter valid email";
+    }
+
+    if (!password.trim()) {
+      newErrors.password = "Password is required";
+    }
+
+    setError(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSignUp = async () => {
+    const isValid = validateSignUp();
+    if (!isValid) {
+      return;
+    }
     try {
       const res = await axios.post(
         BASE_URL + "/signup",
         { firstName, lastName, emailID, password },
         { withCredentials: true },
       );
-      dispatch(addUser(res.data.data))
-       return navigate("/profile");
+      dispatch(addUser(res.data.data));
+      toast.success(res.data.message);
+      return navigate("/profile");
     } catch (err) {
-      setError(err?.response?.message || "something went wrong");
+      toast.error(err?.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -63,8 +132,13 @@ const Login = () => {
                 First Name
               </label>
 
-              <label className="input input-bordered flex items-center gap-3 h-14 rounded-2xl w-full">
-                {/* Email Icon */}
+              <label
+                className={`input flex items-center gap-3 h-14 rounded-2xl w-full ${
+                  error.firstName
+                    ? "input-error border-red-500"
+                    : "input-bordered"
+                }`}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -82,19 +156,35 @@ const Login = () => {
                 <input
                   type="text"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={(e) => {
+                    setFirstName(e.target.value);
+
+                    setError((prev) => ({
+                      ...prev,
+                      firstName: "",
+                    }));
+                  }}
                   placeholder="Enter your First Name"
                   className="grow bg-transparent outline-none"
                 />
               </label>
+
+              {error.firstName && (
+                <p className="text-red-500 text-sm mt-1">{error.firstName}</p>
+              )}
             </div>
             <div className="mb-6">
               <label className="block mb-2 text-sm font-medium">
                 Last Name
               </label>
 
-              <label className="input input-bordered flex items-center gap-3 h-14 rounded-2xl w-full">
-                {/* Email Icon */}
+              <label
+                className={`input flex items-center gap-3 h-14 rounded-2xl w-full ${
+                  error.lastName
+                    ? "input-error border-red-500"
+                    : "input-bordered"
+                }`}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -110,13 +200,24 @@ const Login = () => {
                 </svg>
 
                 <input
-                  type="email"
+                  type="text"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={(e) => {
+                    setLastName(e.target.value);
+
+                    setError((prev) => ({
+                      ...prev,
+                      lastName: "",
+                    }));
+                  }}
                   placeholder="Enter your Last Name"
                   className="grow bg-transparent outline-none"
                 />
               </label>
+
+              {error.lastName && (
+                <p className="text-red-500 text-sm mt-1">{error.lastName}</p>
+              )}
             </div>
           </>
         )}
@@ -125,8 +226,11 @@ const Login = () => {
         <div className="mb-6">
           <label className="block mb-2 text-sm font-medium">Email</label>
 
-          <label className="input input-bordered flex items-center gap-3 h-14 rounded-2xl w-full">
-            {/* Email Icon */}
+          <label
+            className={`input flex items-center gap-3 h-14 rounded-2xl w-full ${
+              error.emailID ? "input-error border-red-500" : "input-bordered"
+            }`}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -144,19 +248,33 @@ const Login = () => {
             <input
               type="email"
               value={emailID}
-              onChange={(e) => setEmailID(e.target.value)}
+              onChange={(e) => {
+                setEmailID(e.target.value);
+
+                setError((prev) => ({
+                  ...prev,
+                  emailID: "",
+                }));
+              }}
               placeholder="Enter your email"
               className="grow bg-transparent outline-none"
             />
           </label>
+
+          {error.emailID && (
+            <p className="text-red-500 text-sm mt-1">{error.emailID}</p>
+          )}
         </div>
 
         {/* Password */}
         <div className="mb-3">
           <label className="block mb-2 text-sm font-medium">Password</label>
 
-          <label className="input input-bordered flex items-center gap-3 h-14 rounded-2xl w-full">
-            {/* Lock Icon */}
+          <label
+            className={`input flex items-center gap-3 h-14 rounded-2xl w-full ${
+              error.password ? "input-error border-red-500" : "input-bordered"
+            }`}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -171,16 +289,20 @@ const Login = () => {
               />
             </svg>
 
-            {/* Password Input */}
             <input
               type={showPassword ? "text" : "password"}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError((prev) => ({
+                  ...prev,
+                  password: "",
+                }));
+              }}
               placeholder="Enter your password"
               className="grow bg-transparent outline-none"
             />
 
-            {/* Eye Button */}
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
@@ -189,6 +311,10 @@ const Login = () => {
               {showPassword ? "🙈" : "👁️"}
             </button>
           </label>
+
+          {error.password && (
+            <p className="text-red-500 text-sm mt-1">{error.password}</p>
+          )}
         </div>
 
         {/* Forgot Password */}
@@ -198,14 +324,15 @@ const Login = () => {
           </a>
         </div>
 
-        <p className="text-red-500 my-2 p-2">{error}</p>
+        {/* <p className="text-red-500 my-2 p-2">{error}</p> */}
 
         {/* Login Button */}
         <button
           className="btn btn-primary w-full h-14 rounded-2xl text-lg font-semibold"
           onClick={isLoginForm ? handleLogin : handleSignUp}
+          disabled={loading}
         >
-          {isLoginForm ? "Login" : "SignUp"}
+          {loading ? "Please wait..." : isLoginForm ? "Login" : "SignUp"}
         </button>
 
         {/* Signup */}

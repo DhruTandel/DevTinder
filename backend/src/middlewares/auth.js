@@ -1,25 +1,26 @@
 const jwt=require("jsonwebtoken");
 const User = require("../models/User");
+const ApiError=require("../../utils/ApiError")
 
 const userAuth=async(req,res,next)=>{
     try{
         const {token}=req.cookies;
         if(!token){
-            return res.status(401).send('Please Login')
+            throw new ApiError(401,"Please Login")
         }
         const debuggedData=jwt.verify(token,process.env.JWT_SECRET)
 
         const {_id}=debuggedData
 
-        const user=await User.findById({_id})
+        const user=await User.findById(_id)
 
         if(!user){
-            throw new Error("User not found")
+            throw new ApiError(404,"User not Found!")
         }
         req.user=user;
         next();
     }catch(err){
-        res.status(401).send("Error is : "+err.message)
+        next(err)
     }
 }
 

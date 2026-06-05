@@ -8,7 +8,6 @@ import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
 
 const EditProfile = ({ user }) => {
-  console.log(user)
   const [firstName, setFirstName] = useState(user.firstName || "");
   const [lastName, setLastName] = useState(user.lastName || "");
   const [age, setAge] = useState(user.age || "");
@@ -18,12 +17,12 @@ const EditProfile = ({ user }) => {
   const [skills, setSkills] = useState(user.skills || []);
   const [error, setError] = useState("");
   const [showtoast, setShowToast] = useState(false);
-  const navigate=useNavigate()
+  const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
   const handleEditProfile = async () => {
-    setError('')
+    setError("");
     try {
       const res = await axios.patch(
         BASE_URL + "/profile/edit",
@@ -40,10 +39,10 @@ const EditProfile = ({ user }) => {
       );
       dispatch(addUser(res?.data?.data));
       setShowToast(true);
-      setTimeout(()=>{
-        setShowToast(false)
-        navigate("/")
-      },1000)
+      setTimeout(() => {
+        setShowToast(false);
+        navigate("/");
+      }, 1000);
     } catch (err) {
       setError(err.response.data);
     }
@@ -58,8 +57,9 @@ const EditProfile = ({ user }) => {
           </div>
         </div>
       )}
-      <div className="w-full flex justify-center py-10 px-4">
-        <div className="w-full max-w-2xl">
+      <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 py-10 px-4">
+        {" "}
+        <div className="w-full max-w-2xl lg:w-1/2">
           <div className="bg-base-300/60 backdrop-blur-xl border border-white/10 hover:border-primary/40 transition-all duration-300 rounded-3xl shadow-2xl p-8 sm:p-10">
             {/* HEADING */}
             <div className="mb-10">
@@ -205,17 +205,19 @@ const EditProfile = ({ user }) => {
             </button>
           </div>
         </div>
-        <UserCard
-          user={{
-            firstName,
-            lastName,
-            gender,
-            photoUrl,
-            skills,
-            age,
-            profession,
-          }}
-        />
+        <div className="w-full lg:w-auto flex justify-center">
+          <UserCard
+            user={{
+              firstName,
+              lastName,
+              gender,
+              photoUrl,
+              skills,
+              age,
+              profession,
+            }}
+          />
+        </div>
       </div>
     </>
   );

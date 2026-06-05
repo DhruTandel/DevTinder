@@ -27,14 +27,13 @@ const Requests = () => {
         {},
         { withCredentials: true },
       );
-      dispatch(removeRequest(_id))
+      dispatch(removeRequest(_id));
 
       toast.success(
-        status=="accepted"?"Request Accepted":"Request Rejected"
-      )
-
+        status == "accepted" ? "Request Accepted" : "Request Rejected",
+      );
     } catch (err) {
-       toast.error("Failed to process request");
+      toast.error(err?.response?.data?.message || "Failed to process request");
     }
   };
 
@@ -133,10 +132,20 @@ const Requests = () => {
 
                 {/* BUTTONS */}
                 <div className="flex flex-col gap-3 w-full md:w-auto">
-                  <button className="btn btn-secondary px-8 rounded-2xl" onClick={()=>handleReviewRequests("accepted",request._id)}>
+                  <button
+                    className="btn btn-secondary px-8 rounded-2xl"
+                    onClick={() =>
+                      handleReviewRequests("accepted", request._id)
+                    }
+                  >
                     Accept
                   </button>
-                  <button className="btn border-white px-8 rounded-2xl" onClick={()=>handleReviewRequests("rejected",request._id)}>
+                  <button
+                    className="btn border-white px-8 rounded-2xl"
+                    onClick={() =>
+                      handleReviewRequests("rejected", request._id)
+                    }
+                  >
                     Reject
                   </button>
                 </div>

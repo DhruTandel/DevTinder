@@ -2,10 +2,11 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const { signUpValidation } = require("../../utils/validation");
+const ApiError=require("../../utils/ApiError");
 
 const authRouter = express.Router();
 
-authRouter.post("/signup", async (req, res) => {
+authRouter.post("/signup", async (req, res,next) => {
   try {
     signUpValidation(req);
     const {
@@ -40,19 +41,22 @@ authRouter.post("/signup", async (req, res) => {
       secure: false, // production ma true
       sameSite: "strict",
     });
-    res.json({ message: "User added succesfully", data: savedUser });
+    res.status(201).json({success:true, message: "User Registered succesfully", data: savedUser });
   } catch (err) {
-    res.status(400).send("Error is :" + err.message);
+    if(err.code===11000){
+      return next(new ApiError(409,"Email ALready exists"))
+    }
+    next(err)
   }
 });
 
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/login", async (req, res,next) => {
   try {
     const { emailID, password } = req.body;
 
     const user = await User.findOne({ emailID: emailID });
     if (!user) {
-      throw new Error("Invalid Credentials");
+      throw new ApiError(401,"Invalid credentials");
     }
     const isPasswordValid = await user.validatePassword(password);
 
@@ -65,12 +69,16 @@ authRouter.post("/login", async (req, res) => {
         secure: false, // production ma true
         sameSite: "strict",
       });
-      res.status(200).send(user);
+      res.status(200).json({
+        success:true,
+        message:"Login Successfull",
+        data:user,
+      });
     } else {
-      throw new Error("Invalid credentials");
+      throw new ApiError(401,"Invalid credentials");
     }
   } catch (err) {
-    res.status(401).send(err.message);
+    next(err)
   }
 });
 

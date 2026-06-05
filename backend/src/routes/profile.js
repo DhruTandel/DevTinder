@@ -3,23 +3,29 @@ const userAuth = require("../middlewares/auth");
 const { validateProfileData } = require("../../utils/validation");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
+const ApiError = require("../../utils/ApiError");
+
 
 const profileRouter = express.Router();
 
 // to get data of our profile
-profileRouter.get("/profile/view", userAuth, async (req, res) => {
+profileRouter.get("/profile/view", userAuth, async (req, res,next) => {
   try {
-    const user = req.user;
-    res.send(user);
+   
+    res.status(200).json({
+      success:true,
+      message:"Profile fetched successfully",
+      data:req.user
+    });
   } catch (err) {
-    res.status(401).send("Please Login");
+   next(err)
   }
 });
 
-profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
+profileRouter.patch("/profile/edit", userAuth, async (req, res,next) => {
   try {
     if (!validateProfileData(req)) {
-      throw new Error("Invalid edit request");
+      throw new ApiError(400,"Invalid edit request");
     }
     const loggedInUser = req.user;
 
@@ -29,33 +35,35 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Profile Updated successfully", data: loggedInUser });
+      .json({ success:true,message: "Profile Updated successfully", data: loggedInUser });
   } catch (err) {
-    res.status(400).send("errror is : " + err.message);
+    next(err)
   }
 });
 
-profileRouter.patch("/profile/password", userAuth, async (req, res) => {
+profileRouter.patch("/profile/password", userAuth, async (req, res,next) => {
   try {
     const { oldPassword, newPassword } = req.body;
     const isOldPasswordValid = await req.user.validatePassword(oldPassword);
 
     if (!isOldPasswordValid) {
-      throw new Error("Enter correct password to change");
+      throw new ApiError(401,"Enter correct password to change");
     }
     const isPasswordValid = validator.isStrongPassword(newPassword);
     if (!isPasswordValid) {
-      throw new Error(
-        "Password should contain 1 uppercase, 1 lower case and special character and must be 6 charcter long",
+      throw new ApiError(
+        400, "Password should contain 1 uppercase, 1 lower case and special character and must be 6 charcter long",
       );
     }
     const newHashPassword = await bcrypt.hash(newPassword, 10);
     req.user.password = newHashPassword;
     await req.user.save();
-    res.json({message:"Password changed successfully"});
+    res.status(200).json({success:true,message:"Password changed successfully"});
   } catch (err) {
-    res.status(400).send("error is : " + err.message);
+    next(err)
   }
 });
+
+
 
 module.exports = profileRouter;
