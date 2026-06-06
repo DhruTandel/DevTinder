@@ -15,7 +15,14 @@ function App() {
     <div data-theme="dark" className="min-h-screen bg-base-200">
       <Provider store={appStore}>
         <BrowserRouter basename="/">
-          <Toaster position="top-center" reverseOrder={false}/>
+          <Toaster
+  position="top-center"
+  toastOptions={{
+    style: {
+      zIndex:2147483647,
+    },
+  }}
+/>
           <Routes>
             <Route path="/" element={<Body />}>
               <Route path="/" element={<Feed />} />
