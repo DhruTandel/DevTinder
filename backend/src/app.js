@@ -7,7 +7,10 @@ const cors=require("cors");
 const errorHandler =require("./middlewares/errorHandler")
 
 app.use(cors({
-  origin:"http://localhost:5173",
+  origin:[
+  "http://localhost:5173",
+  "http://32.236.185.162"
+],
   credentials:true,
 }));
 app.use(express.json());
