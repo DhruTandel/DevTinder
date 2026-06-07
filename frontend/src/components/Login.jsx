@@ -44,11 +44,10 @@ const Login = () => {
       dispatch(addUser(res.data.data));
       toast.success(res.data.message);
       navigate("/");
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Something went wrong", {
-        id: "login-error",
-      });
-    } finally {
+}catch (err) {
+      toast.error(err?.response?.data?.message || "Something went wrong");
+    }
+    finally {
       loginProgress.current=false;
       setLoading(false);
     }
