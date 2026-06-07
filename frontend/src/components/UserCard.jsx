@@ -41,10 +41,11 @@ const UserCard = ({ user }) => {
   };
 
   return (
-    <div className="w-full max-w-sm p-4">
-     <div
+    <div className="w-full flex justify-center p-2 sm:p-4">
+    <div
   className="
-    w-[320px]
+    w-full
+    max-w-[320px]
     rounded-3xl
     overflow-hidden
     bg-[#111827]
@@ -62,7 +63,7 @@ const UserCard = ({ user }) => {
           <img
             src={photoUrl}
             alt="user"
-            className="w-full h-[400px] object-cover object-center"
+            className="w-full h-[350px] sm:h-[400px] object-cover object-center"
           />
 
           {/* Gradient Overlay */}

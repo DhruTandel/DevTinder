@@ -21,7 +21,7 @@ const Navbar = () => {
   };
   return (
     <>
-      <div className="navbar bg-base-300 shadow-sm px-4 relative z-[9999]">
+      <div className="navbar bg-base-300 shadow-sm px-4 relative z-50">
         {/* Left Side */}
         <div className="flex-1">
           <Link to="/" className="btn btn-ghost text-xl">
@@ -30,11 +30,11 @@ const Navbar = () => {
         </div>
 
         {/* Right Side */}
-        <div className="flex-none flex items-center gap-2 mx-4">
+       <div className="flex-none flex items-center gap-1 md:gap-2 mx-1 md:mx-4">
           {/* Profile Dropdown */}
           {user && (
-            <div className="flex items-center gap-5">
-              <p className="text-xl md:text-3xl">Welcome, {user.firstName}</p>
+            <div className="flex items-center gap-2 md:gap-5">
+              <p className="hidden sm:block text-lg md:text-2xl">Welcome, {user.firstName}</p>
 
               <div className="dropdown dropdown-end">
                 <div
