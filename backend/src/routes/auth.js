@@ -4,6 +4,7 @@ const User = require("../models/User");
 const { signUpValidation } = require("../../utils/validation");
 const ApiError = require("../../utils/ApiError");
 const sendEmail = require("../../utils/sendEmail");
+const cookieParser = require("cookie-parser");
 const authRouter = express.Router();
 
 console.log("AUTH FILE LOADED");
@@ -111,7 +112,11 @@ authRouter.post("/login", async (req, res, next) => {
 });
 
 authRouter.post("/logout", async (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+  });
   res.send("You are logged out");
 });
 

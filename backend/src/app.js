@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("./cron/reminderCron")
 const express = require("express");
 const connectDB = require("./config/database");
 const app = express();

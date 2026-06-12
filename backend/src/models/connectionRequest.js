@@ -20,6 +20,10 @@ const connectionRequestSchema = mongoose.Schema(
         message: `{VALUE} is incorrect type`,
       },
     },
+    reminderSent:{
+      type:Boolean,
+      default:false
+    },
   },
   {
     timestamps: true,
