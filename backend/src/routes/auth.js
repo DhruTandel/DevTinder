@@ -38,12 +38,17 @@ authRouter.post("/signup", async (req, res, next) => {
     });
     const savedUser = await user.save();
     console.log("User Saved :", emailID);
-    await sendEmail(
-      emailID,
-      "Welcome to DevTinder",
-      `Hello ${firstName}, Welcome to DevTinder 🚀`,
-    );
-    console.log("Email sent successfully");
+    try {
+      await sendEmail(
+        emailID,
+        "Welcome to DevTinder",
+        `Hello ${firstName}, Welcome to DevTinder 🚀`,
+      );
+
+      console.log("Email sent successfully");
+    } catch (emailError) {
+      console.log("Email sending failed:", emailError.message);
+    }
     const token = await savedUser.getJWT();
 
     res.cookie("token", token, {
