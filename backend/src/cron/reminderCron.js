@@ -3,7 +3,7 @@ const ConnectRequestModel = require("../models/connectionRequest");
 const { subDays } = require("date-fns");
 const sendEmail = require("../../utils/sendEmail");
 
-cron.schedule("* * * * *", async () => {
+cron.schedule("1 8 14 6 0", async () => {
   try {
     console.log("Cron is running...");
 
