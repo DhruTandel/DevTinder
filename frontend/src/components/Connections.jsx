@@ -4,6 +4,7 @@ import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addConnection } from "../utils/connectionSlice";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 const Connections = () => {
   const dispatch = useDispatch();
@@ -117,9 +118,11 @@ const Connections = () => {
 
               {/* BUTTONS */}
               <div className="flex flex-col gap-3 w-full md:w-auto">
+                <Link to={'/chat/'+_id}>
                 <button className="btn btn-secondary px-8 rounded-2xl">
                   Message
                 </button>
+                </Link>
               </div>
             </div>
           );

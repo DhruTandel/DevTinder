@@ -7,9 +7,7 @@ const sendEmail = require("../../utils/sendEmail");
 const cookieParser = require("cookie-parser");
 const authRouter = express.Router();
 
-console.log("AUTH FILE LOADED");
 authRouter.post("/signup", async (req, res, next) => {
-  console.log("SIGNUP ROUTE HIT");
   try {
     signUpValidation(req);
     const {
@@ -69,20 +67,6 @@ authRouter.post("/signup", async (req, res, next) => {
   }
 });
 
-// authRouter.get("/test-email", async (req, res) => {
-//   try {
-//     await sendEmail(
-//       "fallandrise2026@gmail.com",
-//       "DevTinder SES Test",
-//       "Email successfully sent from Node.js",
-//     );
-
-//     res.send("Email Sent");
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500).send(err.message);
-//   }
-// });
 
 authRouter.post("/login", async (req, res, next) => {
   try {

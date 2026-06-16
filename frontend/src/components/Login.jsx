@@ -1,10 +1,11 @@
-import React, { useState,useRef } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 import toast from "react-hot-toast";
+import { socket } from "../utils/socket";
 
 const Login = () => {
   const [firstName, setFirstName] = useState("");
@@ -15,14 +16,13 @@ const Login = () => {
   const [error, setError] = useState({});
   const [isLoginForm, setIsLoginForm] = useState(true);
   const [loading, setLoading] = useState(false);
-  const loginProgress=useRef(false);
+  const loginProgress = useRef(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-
-    if(loginProgress.current) return;
-    loginProgress.current=true;
+    if (loginProgress.current) return;
+    loginProgress.current = true;
     setLoading(true);
     const isValid = validateLogin();
     if (!isValid) {
@@ -41,14 +41,18 @@ const Login = () => {
           withCredentials: true,
         },
       );
+      socket.connect();
+
+      socket.emit("userConnected", {
+        userId: res.data.data._id,
+      });
       dispatch(addUser(res.data.data));
       toast.success(res.data.message);
       navigate("/");
-}catch (err) {
+    } catch (err) {
       toast.error(err?.response?.data?.message || "Something went wrong");
-    }
-    finally {
-      loginProgress.current=false;
+    } finally {
+      loginProgress.current = false;
       setLoading(false);
     }
   };

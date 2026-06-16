@@ -61,6 +61,14 @@ const userSchema = mongoose.Schema(
     membershipType: {
       type: String,
     },
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
+
+    lastSeen: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

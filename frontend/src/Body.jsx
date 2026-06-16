@@ -7,6 +7,7 @@ import { BASE_URL } from "./utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser, removeUser } from "./utils/userSlice";
 import { useLocation } from "react-router-dom";
+import { socket } from "./utils/socket";
 
 const Body = () => {
   const dispatch = useDispatch();
@@ -19,9 +20,19 @@ const Body = () => {
       const res = await axios.get(BASE_URL + "/profile/view", {
         withCredentials: true,
       });
-      dispatch(addUser(res.data.data));
-    } catch (err) {
 
+      dispatch(addUser(res.data.data));
+
+      console.log("Before connect:", socket.connected);
+
+      socket.connect();
+
+      console.log("After connect:", socket.connected);
+
+      socket.emit("userConnected", {
+        userId: res.data.data._id,
+      });
+    } catch (err) {
       if (err.response?.status === 401) {
         dispatch(removeUser());
         navigate("/login");
@@ -31,7 +42,7 @@ const Body = () => {
   };
 
   useEffect(() => {
-    if(location.pathname==="/login"){
+    if (location.pathname === "/login") {
       return;
     }
     if (!user) {
