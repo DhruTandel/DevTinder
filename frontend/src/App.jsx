@@ -18,13 +18,13 @@ function App() {
       <Provider store={appStore}>
         <BrowserRouter basename="/">
           <Toaster
-  position="top-center"
-  toastOptions={{
-    style: {
-      zIndex:2147483647,
-    },
-  }}
-/>
+            position="top-center"
+            toastOptions={{
+              style: {
+                zIndex: 2147483647,
+              },
+            }}
+          />
           <Routes>
             <Route path="/" element={<Body />}>
               <Route path="/" element={<Feed />} />

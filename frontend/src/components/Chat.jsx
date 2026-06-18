@@ -33,6 +33,7 @@ const Chat = () => {
           createdAt: msg?.createdAt,
         };
       });
+      
 
       setNewMessage(chatMessages);
     } catch (err) {
