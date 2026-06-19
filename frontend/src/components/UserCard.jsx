@@ -5,11 +5,36 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { removeFeed } from "../utils/feedSlice";
 import toast from "react-hot-toast";
+import { useState } from "react";
 
 const UserCard = ({ user }) => {
   const dispatch = useDispatch();
+  const [startX, setStartX] = useState(null);
+  const [translateX, setTranslateX] = useState(0);
 
   if (!user) return null;
+
+  const handleTouchStart = (e) => {
+    setStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    if (startX === null) return;
+
+    const currentX = e.touches[0].clientX;
+    setTranslateX(currentX - startX);
+  };
+
+  const handleTouchEnd = () => {
+    if (translateX > 120) {
+      handleSendRequest("interested", _id);
+    } else if (translateX < -120) {
+      handleSendRequest("ignored", _id);
+    }
+
+    setTranslateX(0);
+    setStartX(null);
+  };
 
   const {
     _id,
@@ -42,8 +67,15 @@ const UserCard = ({ user }) => {
 
   return (
     <div className="w-full flex justify-center p-2 sm:p-4">
-    <div
-  className="
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          transform: `translateX(${translateX}px) rotate(${translateX / 20}deg)`,
+          transition: startX ? "none" : "all 0.3s ease",
+        }}
+        className="
     w-full
     max-w-[320px]
     rounded-3xl
@@ -56,7 +88,7 @@ const UserCard = ({ user }) => {
     transition-all
     duration-300
   "
->
+      >
         {" "}
         {/* IMAGE */}
         <div className="relative">
@@ -89,7 +121,7 @@ const UserCard = ({ user }) => {
           {/* Profession */}
           <div className="flex items-center gap-2 text-gray-300 mb-3">
             <Briefcase size={18} />
-            <p className="text-sm">{profession|| "Not Specified"}</p>
+            <p className="text-sm">{profession || "Not Specified"}</p>
           </div>
 
           {/* Skills */}
