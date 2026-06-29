@@ -27,11 +27,21 @@ const Body = () => {
 
       socket.connect();
 
+      socket.once("connect", () => {
+        console.log("SOCKET CONNECTED");
+        console.log("Socket ID:", socket.id);
+
+        socket.emit("userConnected", {
+          userId: res.data.data._id,  
+        });
+      });
+
+      socket.on("connect_error", (err) => {
+        console.log("SOCKET ERROR:", err.message);
+      });
+
       console.log("After connect:", socket.connected);
 
-      socket.emit("userConnected", {
-        userId: res.data.data._id,
-      });
     } catch (err) {
       if (err.response?.status === 401) {
         dispatch(removeUser());

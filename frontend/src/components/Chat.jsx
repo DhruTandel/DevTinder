@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -9,10 +9,12 @@ import { BASE_URL } from "../utils/constants";
 const Chat = () => {
   const { targetUserId } = useParams();
   const [message, setMessage] = useState("");
+  const inputRef = useRef(null);
   const [targetUser, setTargetUser] = useState(null);
   const [newMessage, setNewMessage] = useState([]);
   const user = useSelector((store) => store.user);
   const userId = user?._id;
+  const chatContainerRef = useRef(null);
 
   const fetchMessages = async () => {
     try {
@@ -33,7 +35,6 @@ const Chat = () => {
           createdAt: msg?.createdAt,
         };
       });
-      
 
       setNewMessage(chatMessages);
     } catch (err) {
@@ -41,8 +42,10 @@ const Chat = () => {
     }
   };
 
+  // 1 useeffect userstatuschanges
   useEffect(() => {
     socket.on("userStatusChanged", (data) => {
+      console.log(data.userId);
       if (data.userId === targetUserId) {
         setTargetUser((prev) => ({
           ...prev,
@@ -56,14 +59,20 @@ const Chat = () => {
       socket.off("userStatusChanged");
     };
   }, [targetUserId]);
+
+  //2 useeffect fetchmessage()
   useEffect(() => {
     if (!userId) return;
     fetchMessages();
   }, [targetUserId, userId]);
 
+  //3 useeffect joinchat()
   useEffect(() => {
-    console.log("Socket Connected?", socket.connected);
+    // console.log("Socket Connected?", socket.connected);
     if (!userId || !targetUserId) return;
+    console.log(
+      "chat page Userid: " + userId + "targetUserId :" + targetUserId,
+    );
 
     socket.emit("joinChat", {
       firstName: user.firstName,
@@ -72,7 +81,7 @@ const Chat = () => {
     });
 
     socket.on("messageRecieved", ({ senderId, firstName, text, createdAt }) => {
-      console.log(firstName + " : " + text);
+      // console.log(firstName + " : " + text);
       setNewMessage((prev) => [
         ...prev,
         { senderId, firstName, text, createdAt },
@@ -84,7 +93,22 @@ const Chat = () => {
     };
   }, [userId, targetUserId]);
 
+  //4 useeffect scrolling bottom
+  useEffect(() => {
+    chatContainerRef.current?.scrollTo({
+      top: chatContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [newMessage]);
+
+  //5 useffect input focus
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   const sendMessage = () => {
+
+      console.log("1. sendMessage function called");
     if (!message.trim()) return;
 
     socket.emit("sendMessage", {
@@ -93,12 +117,6 @@ const Chat = () => {
       targetUserId,
       text: message,
     });
-
-    // add the sent message locally for instant feedback
-    // setNewMessage((prev) => [
-    //   ...prev,
-    //   { firstName: user.firstName, text: message, senderId: userId },
-    // ]);
 
     setMessage("");
   };
@@ -130,12 +148,15 @@ const Chat = () => {
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div
+          ref={chatContainerRef}
+          className="flex-1 overflow-y-auto p-4 space-y-4"
+        >
           {newMessage.map((msg, index) => {
             const isSender = msg.senderId && msg.senderId === userId;
-            console.log("senderId =", msg.senderId);
-            console.log("userId =", userId);
-            console.log(msg.senderId === userId);
+            // console.log("senderId =", msg.senderId);
+            // console.log("userId =", userId);
+            // console.log(msg.senderId === userId);
             return (
               <div
                 key={index}
@@ -170,6 +191,12 @@ const Chat = () => {
               className="input input-bordered flex-1"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  sendMessage();
+                }
+              }}
+              ref={inputRef}
             />
 
             <button onClick={sendMessage} className="btn btn-primary">

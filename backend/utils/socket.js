@@ -5,16 +5,13 @@ const User = require("../src/models/User");
 const initializeSocket = (server) => {
   const io = socket(server, {
     cors: {
-      origin: [
-      "http://localhost:5173",
-      "http://3.27.101.13",
-    ],
+      origin: ["http://localhost:5173", "http://3.27.101.13"],credentials: true,
     },
   });
 
   io.on("connection", (socket) => {
-
     socket.on("userConnected", async ({ userId }) => {
+      socket.userId = userId;
       const updatedUser = await User.findByIdAndUpdate(
         userId,
         {
@@ -30,7 +27,6 @@ const initializeSocket = (server) => {
     });
 
     socket.on("joinChat", async ({ firstName, userId, targetUserId }) => {
-      socket.userId = userId;
 
       const roomId = [userId, targetUserId].sort().join("_");
 
@@ -41,7 +37,6 @@ const initializeSocket = (server) => {
       async ({ firstName, userId, targetUserId, text }) => {
         try {
           const roomId = [userId, targetUserId].sort().join("_");
-  
 
           let chat = await Chat.findOne({
             participants: { $all: [userId, targetUserId] },
@@ -73,20 +68,28 @@ const initializeSocket = (server) => {
       },
     );
     socket.on("disconnect", async () => {
-      const updatedUser = await User.findByIdAndUpdate(
-        socket.userId,
-        {
-          isOnline: false,
-          lastSeen: new Date(),
-        },
-        { returnDocument: "after" },
-      );
+      try {
+        if (!socket.userId) return;
 
-      io.emit("userStatusChanged", {
-        userId: socket.userId,
-        isOnline: false,
-        lastSeen: updatedUser.lastSeen,
-      });
+        const updatedUser = await User.findByIdAndUpdate(
+          socket.userId,
+          {
+            isOnline: false,
+            lastSeen: new Date(),
+          },
+          { new: true },
+        );
+
+        if (!updatedUser) return;
+
+        io.emit("userStatusChanged", {
+          userId: socket.userId,
+          isOnline: false,
+          lastSeen: updatedUser.lastSeen,
+        });
+      } catch (err) {
+        console.log("Disconnect Error:", err);
+      }
     });
   });
 };
